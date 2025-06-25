@@ -1,21 +1,25 @@
-name: Deploy
+name: Deploy to Server
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]  # Запускать при пуше в ветку main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Run basic test
-        run: |
-          echo 'CI pipeline works!'
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd my_soc_net
+          git pull origin main
+          docker-compose down
+          docker-compose up --build -d
